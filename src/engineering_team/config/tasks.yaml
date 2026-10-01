@@ -1,0 +1,85 @@
+design_task:
+  description: >
+    Design a system that meets these requirements:
+
+    {requirements}
+
+    Output the design as markdown only: the modules, the classes, and the function and
+    method signatures with a one-line description of each. Do not write implementation
+    code — signatures only.
+
+    Assign the work explicitly to backend_engineer (the backend module), frontend_engineer
+    (a Gradio app.py) and test_engineer (unit tests for the backend).
+
+    Constraints the team works under: every file lives directly in one flat sandbox
+    directory with no subdirectories, and the sandbox is a uv project with gradio installed.
+    Gradio is the only third-party package; the backend and tests use the standard library.
+
+    Look up the Gradio 6 API with your Context7 tools and include a short "Gradio 6 notes"
+    section for the frontend engineer: the components, kwargs and method signatures app.py
+    should use, and anything that changed from earlier Gradio versions.
+  expected_output: >
+    A markdown design covering the code structure, the exact interfaces, who builds what,
+    and Gradio 6 notes for the frontend engineer.
+  agent: engineering_lead
+  output_file: sandbox/design.md
+
+backend_task:
+  description: >
+    Implement the backend the lead designed, meeting these requirements:
+
+    {requirements}
+
+    Write it to the sandbox as a single module using only the Python standard library.
+    Then write a short throwaway script that imports it and exercises the main paths, and
+    run that script with your sandbox tools. Fix anything it turns up. Do not report the
+    backend as finished until you have actually seen it run.
+  expected_output: >
+    A working backend module in the sandbox, verified by running it, plus the name of the
+    file you wrote.
+  agent: backend_engineer
+  context:
+    - design_task
+
+frontend_task:
+  description: >
+    Write a single-file Gradio app called app.py that demonstrates the backend, following
+    the design. Import the backend module — never reimplement its logic. Assume one user.
+    Make it clean and professional. Follow the Gradio 6 notes in the design, and check
+    anything they don't cover with your Context7 tools rather than guessing.
+
+    Then write a separate script called _validate.py that imports app.py and confirms the
+    Blocks object constructs, and run it with your sandbox tools.
+
+    Critically: _validate.py must never call .launch(). That blocks forever and your tool
+    call will time out rather than tell you anything useful.
+
+    The requirements, for context:
+
+    {requirements}
+  expected_output: >
+    app.py in the sandbox, ready to run as-is, confirmed to construct without error.
+  agent: frontend_engineer
+  context:
+    - design_task
+    - backend_task
+
+test_task:
+  description: >
+    Write unit tests for the backend module in a single test file using the stdlib
+    unittest module. Cover the normal paths and the edge cases the requirements call out.
+    Do not test app.py.
+
+    Run the tests with your sandbox tools. If they fail, decide whether the test or the
+    backend is wrong, fix it, and run them again. Keep going until everything passes.
+
+    If you change the backend, do not change any interface app.py relies on — check app.py
+    first if you are unsure.
+  expected_output: >
+    A passing test file in the sandbox, and a summary of what was tested and what you had
+    to fix.
+  agent: test_engineer
+  context:
+    - design_task
+    - backend_task
+  output_file: sandbox/test_summary.md

@@ -12,7 +12,7 @@ Every line of code they write runs **inside a Docker container**, never on your 
 requirements.md
       │
       ▼
- Engineering lead ──▶ design.md          (no tools — design only)
+ Engineering lead ──▶ design.md          (Context7 docs only — design, no code)
       │
       ▼
  Backend engineer ──▶ backend module     ┐
@@ -35,9 +35,14 @@ your laptop. `run_sandbox_python` starts a throwaway container with nothing moun
 sandbox directory. The worst a confused agent can do is break its own workspace, and
 `--rm` deletes the container either way.
 
-**The lead has no tools, deliberately.** Give an agent the ability to write files and it
-will write the implementation instead of designing it. Removing the tools is what keeps the
-design a design.
+**The lead has no sandbox tools, deliberately.** Give an agent the ability to write files
+and it will write the implementation instead of designing it. Removing those tools is what
+keeps the design a design.
+
+**The lead and frontend engineer can read current docs.** Both are connected to the
+[Context7](https://context7.com) MCP server, so they check the real Gradio 6 API instead of
+recalling an older one from training data. The lead writes "Gradio 6 notes" into the design
+for the frontend engineer to follow.
 
 **The test engineer is the only agent with a real loop.** It runs tests, reads the failure,
 edits the backend, runs again — up to `max_iter=30`. That loop is why the output usually
@@ -46,7 +51,7 @@ works rather than merely looking plausible.
 - `requirements.md` — what to build. This is the file you edit.
 - `config/agents.yaml` / `config/tasks.yaml` — the team and their instructions
 - `tools/sandbox_tools.py` — the four tools and the Docker call
-- `crew.py` — wiring, models, iteration budgets
+- `crew.py` — wiring, models, iteration budgets, MCP servers
 
 ## Setup
 
@@ -69,6 +74,10 @@ wastes three agents' worth of tokens downstream.
 uv run run_crew                        # builds what requirements.md describes
 uv run run_crew my_other_spec.md       # or point it at any other file
 ```
+
+The other CrewAI entry points work too: `uv run train <n> <file.pkl>`,
+`uv run test <n> <eval_model>`, `uv run replay <task_id>` and
+`uv run run_with_trigger '{"requirements": "..."}'`.
 
 **The sandbox is wiped at the start of every run.** Anything you want to keep, copy out first.
 
@@ -110,4 +119,3 @@ module and a UI, not a system.
 - Add a fifth agent — a reviewer that reads the diff before the tests run.
 - Swap `SANDBOX_IMAGE` for an image with your stack preinstalled and build something
   other than a Gradio app.
-# agentic_engineering_team

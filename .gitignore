@@ -1,0 +1,6 @@
+.env
+.venv/
+__pycache__/
+.DS_Store
+# Regenerated on every run; copy anything you want to keep out first
+sandbox/
